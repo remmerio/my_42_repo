@@ -1,0 +1,38 @@
+#!/bin/bash
+
+ARCHITECTURE=$(uname -m)
+KERNEL_VERSION=$(uname -r)
+PHYSICAL_PROCESSORS=$(lscpu | grep 'Socket(s)' | awk '{print $2}')
+VIRTUAL_PROCESSORS=$(lscpu | grep 'CPU(s)' | awk '{print $2; exit}')
+AVAILABLE_RAM=$(free -m | grep 'Mem' | awk '{print $2}')
+RAM_UTILIZATION=$(free -m | grep 'Mem' | awk '{print $3/$2*100}')
+AVAILABLE_MEMORY=$(df -BG | grep '^/dev/' | awk '{ft = ft + $4} END {print ft}')
+MEMORY_UTILIZATION=$(df -BG | grep '^/dev/' | awk '{ft = ft + $3} END {print ft}')
+PERC_MEMORY_UTILIZATION=$((MEMORY_UTILIZATION/AVAILABLE_MEMORY)*100)
+CPU_UTILIZATION=$(top -bn1 | grep Cpu | awk '{print($2 + $4)}')
+LAST_REBOOT=$(who -b | awk '{print $3, $4}')
+LVM_STATUS=$(lsblk | grep lvm | wc -l | awk '{if ($1!=0){printf("active"); exit;} else print "no"}')
+ACTIVE_CONNECTIONS=$(ss -t state established | wc -l)
+ACTIVE_USERS=$(users | wc -w)
+IP=$(hostname -I)
+MAC=$(ip link show | grep "ether" | awk '{print $2}')
+SUDO_COMMANDS=$(journalctl _COMM=sudo | grep COMMAND | wc -l)
+
+    echo "---------------- System Information ----------------"
+    echo "Architecture: $ARCHITECTURE"
+    echo "Kernel Version: $KERNEL_VERSION"
+    echo "Physical Processors: $PHYSICAL_PROCESSORS"
+    echo "Virtual Processors: $VIRTUAL_PROCESSORS"
+    echo "Available RAM: ${AVAILABLE_RAM}MB"
+    echo "RAM utilization: ${RAM_UTILIZATION}%"
+    echo "Available Memory: ${AVAILABLE_MEMORY}GB"
+    echo "Memory utilization: ${MEMORY_UTILIZATION}%"
+    echo "CPU Utilization: ${CPU_UTILIZATION}%"
+    echo "Last Reboot: $LAST_REBOOT"
+    echo "LVM Status: $LVM_STATUS"
+    echo "Active Connections: $ACTIVE_CONNECTIONS"
+    echo "Active Users: $ACTIVE_USERS"
+    echo "IP Address: $IP"
+    echo "MAC Address: $MAC"
+    echo "Sudo Commands Executed: $SUDO_COMMANDS"
+    echo "----------------------------------------------------"
